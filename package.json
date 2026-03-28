@@ -1,0 +1,13 @@
+{
+  "name": "website-selector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static website selector app for localhost and cloud runtimes",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

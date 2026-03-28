@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch Deck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-1: #f6f3ec;
+            --bg-2: #efe6d2;
+            --panel: rgba(255, 255, 255, 0.7);
+            --panel-strong: rgba(255, 255, 255, 0.88);
+            --text-strong: #13232f;
+            --text-soft: #496170;
+            --stroke: rgba(19, 35, 47, 0.12);
+            --accent: #0d8a80;
+            --accent-2: #d96f2b;
+            --accent-3: #2167d6;
+            --danger: #bf3f32;
+            --shadow: 0 20px 50px rgba(23, 39, 53, 0.18);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+        }
+
+        body[data-theme='ocean'] {
+            --bg-1: #e9f4ff;
+            --bg-2: #d8e8fb;
+            --panel: rgba(245, 250, 255, 0.72);
+            --panel-strong: rgba(255, 255, 255, 0.9);
+            --text-strong: #10263e;
+            --text-soft: #426381;
+            --stroke: rgba(16, 38, 62, 0.13);
+            --accent: #1f7ed0;
+            --accent-2: #11a0a8;
+            --accent-3: #3f4fbf;
+        }
+
+        body[data-theme='midnight'] {
+            --bg-1: #111726;
+            --bg-2: #1a2537;
+            --panel: rgba(18, 25, 39, 0.74);
+            --panel-strong: rgba(24, 33, 50, 0.88);
+            --text-strong: #ecf4ff;
+            --text-soft: #9db4d1;
+            --stroke: rgba(214, 230, 255, 0.16);
+            --accent: #57b09a;
+            --accent-2: #dd8a42;
+            --accent-3: #7096ff;
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.34);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            color: var(--text-strong);
+            background:
+                radial-gradient(circle at 8% 15%, #ffd7a2 0, rgba(255, 215, 162, 0.18) 34%, transparent 55%),
+                radial-gradient(circle at 90% 4%, #95e4d9 0, rgba(149, 228, 217, 0.2) 30%, transparent 50%),
+                linear-gradient(160deg, var(--bg-1), var(--bg-2));
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .ambient {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .ambient::before,
+        .ambient::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(24px);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .ambient::before {
+            width: 280px;
+            height: 280px;
+            top: 65%;
+            left: -80px;
+            background: rgba(33, 103, 214, 0.15);
+        }
+
+        .ambient::after {
+            width: 240px;
+            height: 240px;
+            right: -60px;
+            top: 28%;
+            background: rgba(217, 111, 43, 0.18);
+            animation-delay: -3s;
+        }
+
+        .app {
+            max-width: 1320px;
+            margin: 20px auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+            min-height: calc(100vh - 40px);
+        }
+
+        .panel {
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--stroke);
+            box-shadow: var(--shadow);
+            border-radius: var(--radius-lg);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            animation: reveal 0.6s ease;
+        }
+
+        .brand {
+            margin-bottom: 18px;
+        }
+
+        .brand h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .brand p {
+            margin-top: 8px;
+            color: var(--text-soft);
+            font-size: 14px;
+        }
+
+        .bookmark-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .bookmark {
+            border: 1px solid var(--stroke);
+            background: var(--panel-strong);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .bookmark:hover {
+            transform: translateY(-3px);
+            border-color: rgba(13, 138, 128, 0.45);
+            box-shadow: 0 14px 24px rgba(16, 31, 43, 0.11);
+        }
+
+        .bookmark.active {
+            border-color: rgba(13, 138, 128, 0.58);
+            box-shadow: inset 0 0 0 1px rgba(13, 138, 128, 0.45);
+        }
+
+        .bookmark-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .bookmark-url {
+            color: var(--text-soft);
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .tip {
+            margin-top: auto;
+            border-radius: var(--radius-md);
+            border: 1px dashed rgba(33, 103, 214, 0.35);
+            background: rgba(33, 103, 214, 0.08);
+            padding: 12px;
+            color: #21435f;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .main {
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            gap: 12px;
+            animation: reveal 0.72s ease;
+        }
+
+        .study-guide {
+            display: none;
+            grid-column: 1 / -1;
+            padding: 22px;
+            gap: 14px;
+            animation: reveal 0.45s ease;
+        }
+
+        .study-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .study-top h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 30px;
+            letter-spacing: -0.03em;
+        }
+
+        .study-clock {
+            border: 1px solid var(--stroke);
+            border-radius: 999px;
+            padding: 8px 14px;
+            background: var(--panel-strong);
+            font-weight: 700;
+            font-size: 13px;
+            color: #29455b;
+        }
+
+        .study-grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .study-card {
+            background: var(--panel-strong);
+            border: 1px solid var(--stroke);
+            border-radius: var(--radius-md);
+            padding: 14px;
+        }
+
+        .study-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .study-textarea {
+            width: 100%;
+            min-height: 160px;
+            resize: vertical;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--stroke);
+            padding: 10px;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.93);
+            color: var(--text-strong);
+            outline: none;
+        }
+
+        .study-textarea:focus {
+            border-color: rgba(13, 138, 128, 0.55);
+            box-shadow: 0 0 0 4px rgba(13, 138, 128, 0.13);
+        }
+
+        .study-list {
+            list-style: none;
+            display: grid;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .study-list li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .study-list input[type='checkbox'] {
+            accent-color: #0d8a80;
+            width: 16px;
+            height: 16px;
+        }
+
+        .study-note {
+            color: #29455b;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        body.study-mode .sidebar,
+        body.study-mode .main {
+            display: none;
+        }
+
+        body.study-mode .study-guide {
+            display: grid;
+        }
+
+        .hero {
+            padding: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .headline {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .headline h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 29px;
+            letter-spacing: -0.03em;
+        }
+
+        .headline span {
+            color: var(--text-soft);
+            font-size: 13px;
+        }
+
+        .searchbar {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 10px;
+        }
+
+        .input {
+            border-radius: 999px;
+            border: 1px solid var(--stroke);
+            background: rgba(255, 255, 255, 0.94);
+            padding: 14px 18px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input:focus {
+            border-color: rgba(33, 103, 214, 0.5);
+            box-shadow: 0 0 0 4px rgba(33, 103, 214, 0.14);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 0 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #13a092);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--accent-3), #3f7ee0);
+            color: white;
+        }
+
+        .btn-tertiary {
+            background: linear-gradient(135deg, #d96f2b, #ea8f36);
+            color: white;
+        }
+
+        .status-bar {
+            padding: 10px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-soft);
+            font-size: 13px;
+        }
+
+        .chip {
+            background: var(--panel-strong);
+            border: 1px solid var(--stroke);
+            border-radius: 999px;
+            padding: 6px 10px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chip.status-loading {
+            border-color: rgba(217, 111, 43, 0.48);
+            color: #8f481c;
+        }
+
+        .chip.status-ready {
+            border-color: rgba(13, 138, 128, 0.5);
+            color: #0f695f;
+        }
+
+        .chip.status-error {
+            border-color: rgba(191, 63, 50, 0.5);
+            color: #8f2f25;
+        }
+
+        .frame-wrap {
+            position: relative;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        .frame-shell {
+            border-radius: 18px;
+            border: 1px solid var(--stroke);
+            background: #fbfdfd;
+            height: 100%;
+            min-height: 560px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.blob-view .frame-wrap {
+            padding: 22px;
+        }
+
+        body.blob-view .frame-shell {
+            border-radius: 20px;
+            border-width: 2px;
+            box-shadow: 0 24px 45px rgba(23, 39, 53, 0.22);
+            background: #081019;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        body.blob-view .frame-shell::before {
+            content: '';
+            position: absolute;
+            inset: -18px -28px;
+            border-radius: 54% 46% 52% 48% / 43% 57% 45% 55%;
+            background: radial-gradient(circle at 22% 18%, rgba(113, 202, 255, 0.34), rgba(34, 102, 160, 0.18) 46%, rgba(19, 47, 78, 0.08) 74%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body.blob-view .frame-shell > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        body.blob-view #mainFrame {
+            border-radius: 16px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            opacity: 0;
+            transform: scale(0.995);
+            transition: opacity 0.26s ease, transform 0.26s ease;
+        }
+
+        iframe.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            text-align: center;
+            color: #1d3547;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(13, 138, 128, 0.06),
+                rgba(13, 138, 128, 0.06) 12px,
+                rgba(33, 103, 214, 0.04) 12px,
+                rgba(33, 103, 214, 0.04) 24px
+            );
+        }
+
+        .overlay strong {
+            display: block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .overlay p {
+            max-width: 560px;
+            line-height: 1.5;
+            color: #355166;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .settings-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 21, 31, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 50;
+        }
+
+        .settings-modal.open {
+            display: flex;
+        }
+
+        .settings-panel {
+            width: min(920px, 100%);
+            max-height: min(90vh, 860px);
+            overflow: auto;
+            background: var(--panel-strong);
+            border: 1px solid var(--stroke);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .settings-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-head h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        .settings-close {
+            border: 1px solid var(--stroke);
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: white;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .settings-item {
+            border: 1px solid var(--stroke);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #29455b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .settings-blob-grid {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .settings-blob-card {
+            border: 1px solid rgba(43, 90, 118, 0.25);
+            border-radius: 60% 40% 55% 45% / 42% 54% 46% 58%;
+            padding: 12px;
+            background: radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.92), rgba(233, 246, 255, 0.9) 58%, rgba(213, 235, 255, 0.94));
+            box-shadow: 0 14px 30px rgba(31, 58, 78, 0.12);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            animation: reveal 0.28s ease both;
+        }
+
+        .settings-blob-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(31, 58, 78, 0.16);
+        }
+
+        .settings-blob-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .settings-blob-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1d3950;
+        }
+
+        .settings-blob-url {
+            margin-top: 2px;
+            font-size: 11px;
+            color: #48657a;
+            word-break: break-all;
+        }
+
+        .settings-blob-load {
+            border: 1px solid rgba(43, 90, 118, 0.34);
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #20435d;
+            flex-shrink: 0;
+        }
+
+        .settings-blob-frame-wrap {
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(59, 98, 125, 0.25);
+            background: #eaf4fb;
+            height: 150px;
+        }
+
+        .settings-blob-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            opacity: 1;
+            transform: none;
+        }
+
+        .settings-toggle {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            color: #29455b;
+        }
+
+        .settings-toggle input[type='checkbox'] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .theme-grid {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .theme-option {
+            border: 1px solid var(--stroke);
+            background: #fff;
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: 700;
+            font-size: 13px;
+            color: #253f53;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .theme-option:hover {
+            transform: translateY(-1px);
+            border-color: rgba(13, 138, 128, 0.45);
+        }
+
+        .theme-option.active {
+            border-color: rgba(13, 138, 128, 0.65);
+            box-shadow: inset 0 0 0 1px rgba(13, 138, 128, 0.35);
+        }
+
+        .theme-swatch {
+            display: block;
+            height: 8px;
+            border-radius: 999px;
+            margin-top: 8px;
+        }
+
+        .swatch-warm {
+            background: linear-gradient(90deg, #f6f3ec, #efe6d2, #d96f2b);
+        }
+
+        .swatch-ocean {
+            background: linear-gradient(90deg, #e9f4ff, #d8e8fb, #1f7ed0);
+        }
+
+        .swatch-midnight {
+            background: linear-gradient(90deg, #111726, #1a2537, #7096ff);
+        }
+
+        .gg-lock-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(circle at center, #5f6064 0%, #505155 45%, #3f4044 72%, #2d2f33 100%),
+                linear-gradient(180deg, #5f6064, #383a3f);
+            color: #eef2f8;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+        }
+
+        .gg-lock-screen.hidden {
+            display: none;
+        }
+
+        .gg-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px 20px 34px;
+        }
+
+        .gg-card {
+            width: 100%;
+        }
+
+        .gg-title {
+            margin: 0;
+            color: #12b5e6;
+            font-size: clamp(48px, 6vw, 58px);
+            line-height: 1.05;
+            letter-spacing: -0.01em;
+            font-weight: 700;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.26);
+        }
+
+        .gg-copy {
+            margin-top: 20px;
+            font-size: clamp(28px, 2.2vw, 33px);
+            color: rgba(236, 240, 247, 0.82);
+            line-height: 1.28;
+            font-weight: 300;
+        }
+
+        .gg-help {
+            position: fixed;
+            left: 50%;
+            bottom: 10px;
+            transform: translateX(-50%);
+            margin: 0;
+            font-size: 10px;
+            color: rgba(220, 227, 239, 0.24);
+            letter-spacing: 0.03em;
+        }
+
+        .gg-lock {
+            width: 140px;
+            height: 110px;
+            margin: 42px auto 0;
+            position: relative;
+            filter: drop-shadow(0 14px 8px rgba(0, 0, 0, 0.34));
+        }
+
+        .gg-lock-shackle {
+            width: 64px;
+            height: 56px;
+            border: 11px solid #a8b9be;
+            border-bottom: none;
+            border-radius: 34px 34px 0 0;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.22);
+        }
+
+        .gg-lock-shackle::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 8px;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 38px;
+            border: 8px solid #829aa1;
+            border-bottom: none;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .gg-lock-body {
+            width: 116px;
+            height: 72px;
+            margin: -4px auto 0;
+            border-radius: 12px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 42%),
+                repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0 4px, rgba(255, 255, 255, 0.02) 4px 8px),
+                linear-gradient(180deg, #1ac0ed, #0ea8d9);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gg-lock-body::before {
+            content: '';
+            position: absolute;
+            inset: 16px 22px 10px;
+            background: rgba(0, 126, 165, 0.4);
+            clip-path: polygon(50% 0, 100% 20%, 86% 66%, 50% 100%, 14% 66%, 0 20%);
+            border: 3px solid rgba(121, 234, 255, 0.66);
+            border-radius: 3px;
+        }
+
+        .gg-lock-body::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -16px;
+            transform: translateX(-50%);
+            width: 96px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.36);
+            filter: blur(3px);
+        }
+
+        body.gg-locked {
+            overflow: hidden;
+        }
+
+        @keyframes reveal {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-14px);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+
+            .tip {
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .app {
+                margin: 8px auto;
+                min-height: calc(100vh - 16px);
+                padding: 8px;
+            }
+
+            .searchbar {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                min-height: 44px;
+            }
+
+            .headline h2 {
+                font-size: 24px;
+            }
+
+            .frame-shell {
+                min-height: 460px;
+            }
+
+            .study-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .study-top h2 {
+                font-size: 24px;
+            }
+
+            .theme-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="ggLockScreen" class="gg-lock-screen">
+        <div class="gg-main">
+            <div class="gg-card">
+                <h2 class="gg-title">Restricted</h2>
+                <p class="gg-copy">This website has been blocked by your administrator.</p>
+                <div class="gg-lock" aria-hidden="true">
+                    <div class="gg-lock-shackle"></div>
+                    <div class="gg-lock-body"></div>
+                </div>
+            </div>
+        </div>
+        <p class="gg-help">Press Up, Down, Up, Down to continue.</p>
+    </div>
+
+    <div class="ambient"></div>
+
+    <div class="app">
+        <aside class="panel sidebar">
+            <div class="brand">
+                <h1>Launch Deck</h1>
+                <p>One control panel for your favorite web destinations.</p>
+            </div>
+
+            <div id="bookmarkList" class="bookmark-list"></div>
+
+            <div class="tip">
+                Quick tip: Press <strong>Enter</strong> in the URL field to launch instantly. Use <strong>Open in Tab</strong> for sites that block iframe embedding.
+            </div>
+        </aside>
+
+        <main class="main">
+            <section class="panel hero">
+                <div class="headline">
+                    <h2>Website Command Center</h2>
+                    <span>Fast launch, clean status, better flow.</span>
+                </div>
+
+                <div class="searchbar">
+                    <input id="urlInput" class="input" type="text" placeholder="Enter a URL or domain (example.com)">
+                    <button id="loadBtn" class="btn btn-primary" type="button">Load URL</button>
+                    <button id="openTabBtn" class="btn btn-secondary" type="button">Open in Tab</button>
+                    <button id="settingsBtn" class="btn btn-tertiary" type="button">Settings</button>
+                </div>
+            </section>
+
+            <section class="panel status-bar">
+                <span id="statusChip" class="chip">Idle</span>
+                <span id="urlChip" class="chip">No site loaded</span>
+            </section>
+
+            <section class="panel frame-wrap">
+                <div class="frame-shell">
+                    <div id="overlay" class="overlay">
+                        <div>
+                            <strong>Ready to launch</strong>
+                            <p>Select a preset from the left or paste any URL above. Some websites block iframe loading for security, and you can use Open in Tab when that happens.</p>
+                        </div>
+                    </div>
+                    <iframe id="mainFrame" title="Website preview"></iframe>
+                </div>
+            </section>
+        </main>
+
+        <section id="studyGuide" class="panel study-guide">
+            <div class="study-top">
+                <h2>Study Guide Mode</h2>
+                <div id="studyClock" class="study-clock">Ready</div>
+            </div>
+
+            <div class="study-grid">
+                <article class="study-card">
+                    <h3>Topic Summary</h3>
+                    <textarea class="study-textarea" placeholder="Write key points, formulas, definitions, and examples..."></textarea>
+                </article>
+
+                <article class="study-card">
+                    <h3>Tasks</h3>
+                    <ul class="study-list">
+                        <li><input type="checkbox"><span>Review notes for 20 minutes</span></li>
+                        <li><input type="checkbox"><span>Practice 10 questions</span></li>
+                        <li><input type="checkbox"><span>Summarize weak areas</span></li>
+                        <li><input type="checkbox"><span>Quick self-test</span></li>
+                    </ul>
+                </article>
+            </div>
+
+            <article class="study-card">
+                <h3>Focus Prompt</h3>
+                <p class="study-note">You are in Study Guide Mode. Press <strong>Esc</strong> any time to return to normal view.</p>
+            </article>
+        </section>
+    </div>
+
+    <div id="settingsModal" class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="settings-panel">
+            <div class="settings-head">
+                <h3 id="settingsTitle">Settings</h3>
+                <button id="closeSettingsBtn" class="settings-close" type="button">Close</button>
+            </div>
+            <div class="settings-item">
+                <strong>Keybinds</strong><br>
+                <span>Ctrl+Shift+E = Study Guide Mode</span><br>
+                <span>Esc = Exit Study Guide / Close Settings</span>
+            </div>
+            <div class="settings-item">
+                <strong>Embedding note</strong><br>
+                Some websites block iframe previews due to security policies. Use Open in Tab when preview is blocked.
+            </div>
+            <div class="settings-item">
+                <strong>Website Blobs</strong><br>
+                Saved websites are shown below as blob cards with live iframe previews.
+                <div id="settingsBlobGrid" class="settings-blob-grid"></div>
+            </div>
+            <div class="settings-item">
+                <strong>Theme</strong><br>
+                Pick the look and feel for your dashboard.
+                <div class="theme-grid">
+                    <button class="theme-option" data-theme-option="warm" type="button">Warm
+                        <span class="theme-swatch swatch-warm"></span>
+                    </button>
+                    <button class="theme-option" data-theme-option="ocean" type="button">Ocean
+                        <span class="theme-swatch swatch-ocean"></span>
+                    </button>
+                    <button class="theme-option" data-theme-option="midnight" type="button">Midnight
+                        <span class="theme-swatch swatch-midnight"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="settings-item">
+                <strong>Layout</strong><br>
+                Turn this on to automatically load every site in Blob View.
+                <label class="settings-toggle" for="blobViewToggle">
+                    <input id="blobViewToggle" type="checkbox">
+                    <span>Auto-load all websites in Blob View</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const bookmarks = [
+            { label: 'chudportal 1', url: 'https://studyinglessonsforall.b-cdn.net' },
+            { label: 'chud portal 2', url: 'https://cronusz3n96.github.io/sacdvsfbnmn/' },
+            { label: 'Cherri', url: 'https://registry.delystigemusikanter.com/onboarding/' },
+            { label: 'space', url: 'https://doyourhomeworkelaixl.atamanco.eu/' },
+            { label: 'cineos', url: 'https://doyourhomeworktwin.s3.us-east-2.amazonaws.com/cineos.html' },
+            { label: 'void network', url: 'https://ssl.vpn.idkkilo.accesscam.org/?/' },
+            { label: 'Void 2', url: 'https://15.204.209.18.sslip.io/?/' },
+            { label: 'void 3', url: 'https://wjmi.true-woman.ru/?/' },
+            { label: 'void 4', url: 'https://www.bcsdnysucks.org/?/' }
+        ];
+
+        const bookmarkList = document.getElementById('bookmarkList');
+        const urlInput = document.getElementById('urlInput');
+        const loadBtn = document.getElementById('loadBtn');
+        const openTabBtn = document.getElementById('openTabBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const settingsBlobGrid = document.getElementById('settingsBlobGrid');
+        const themeOptions = document.querySelectorAll('[data-theme-option]');
+        const blobViewToggle = document.getElementById('blobViewToggle');
+        const mainFrame = document.getElementById('mainFrame');
+        const overlay = document.getElementById('overlay');
+        const statusChip = document.getElementById('statusChip');
+        const urlChip = document.getElementById('urlChip');
+        const studyGuide = document.getElementById('studyGuide');
+        const studyClock = document.getElementById('studyClock');
+        const body = document.body;
+        const ggLockScreen = document.getElementById('ggLockScreen');
+        const ggBlockedUrl = document.getElementById('ggBlockedUrl');
+
+        let currentUrl = '';
+        let studyClockTimer = null;
+        const THEME_KEY = 'launchDeckTheme';
+        const BLOB_VIEW_KEY = 'launchDeckBlobView';
+        const AUTO_BLOB_KEY = 'launchDeckAutoBlobView';
+        let autoBlobView = false;
+        const unlockSequence = ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowDown'];
+        let unlockProgress = 0;
+
+        function unlockGoGuardianScreen() {
+            ggLockScreen.classList.add('hidden');
+            body.classList.remove('gg-locked');
+            unlockProgress = 0;
+        }
+
+        function trackUnlockSequence(event) {
+            if (ggLockScreen.classList.contains('hidden')) {
+                return;
+            }
+
+            if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+                unlockProgress = 0;
+                return;
+            }
+
+            event.preventDefault();
+            if (event.key === unlockSequence[unlockProgress]) {
+                unlockProgress += 1;
+                if (unlockProgress === unlockSequence.length) {
+                    unlockGoGuardianScreen();
+                }
+            } else {
+                unlockProgress = event.key === unlockSequence[0] ? 1 : 0;
+            }
+        }
+
+        function normalizeUrl(value) {
+            const raw = value.trim();
+            if (!raw) return '';
+            return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+        }
+
+        function setStatus(text, mode) {
+            statusChip.textContent = text;
+            statusChip.className = 'chip';
+            if (mode) {
+                statusChip.classList.add(`status-${mode}`);
+            }
+        }
+
+        function setCurrentUrl(url) {
+            currentUrl = url;
+            urlChip.textContent = url || 'No site loaded';
+            urlChip.title = url || '';
+            if (ggBlockedUrl) {
+                ggBlockedUrl.textContent = url || window.location.href;
+            }
+        }
+
+        function activateBookmark(buttonToActivate) {
+            const buttons = document.querySelectorAll('.bookmark');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (buttonToActivate) {
+                buttonToActivate.classList.add('active');
+            }
+        }
+
+        function loadSite(rawUrl, button, mode = 'auto') {
+            const url = normalizeUrl(rawUrl);
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            try {
+                new URL(url);
+            } catch {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            const useBlobView = mode === 'on' || (mode === 'auto' && autoBlobView);
+            applyBlobView(useBlobView);
+            activateBookmark(button || null);
+            setCurrentUrl(url);
+            setStatus('Loading...', 'loading');
+            overlay.classList.remove('hidden');
+            overlay.innerHTML = '<div><strong>Loading</strong><p>Fetching the website preview. If it stays blocked, try Open in Tab.</p></div>';
+            mainFrame.classList.remove('visible');
+
+            const iframeTarget = `${url}${url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+            mainFrame.src = iframeTarget;
+
+            mainFrame.onload = () => {
+                setStatus('Live Preview Ready', 'ready');
+                overlay.classList.add('hidden');
+                mainFrame.classList.add('visible');
+            };
+
+            mainFrame.onerror = () => {
+                setStatus('Unable to Embed', 'error');
+                mainFrame.classList.remove('visible');
+                overlay.classList.remove('hidden');
+                overlay.innerHTML = '<div><strong>Preview blocked</strong><p>This website may deny iframe embedding (security policy). Use Open in Tab to view it directly.</p></div>';
+            };
+        }
+
+        function loadCustomUrl() {
+            loadSite(urlInput.value, null, 'auto');
+            urlInput.value = '';
+        }
+
+        function openInTab() {
+            const candidate = normalizeUrl(urlInput.value) || currentUrl;
+            if (!candidate) {
+                alert('Enter or load a URL first.');
+                return;
+            }
+
+            try {
+                new URL(candidate);
+                window.open(candidate, '_blank', 'noopener,noreferrer');
+            } catch {
+                alert('Please enter a valid URL');
+            }
+        }
+
+        function renderBookmarks() {
+            bookmarkList.innerHTML = '';
+            bookmarks.forEach((item) => {
+                const button = document.createElement('button');
+                button.className = 'bookmark';
+                button.type = 'button';
+                button.innerHTML = `<div class="bookmark-title">${item.label}</div><div class="bookmark-url">${item.url}</div>`;
+                button.addEventListener('click', () => loadSite(item.url, button));
+                bookmarkList.appendChild(button);
+            });
+        }
+
+        function renderSettingsBlobs() {
+            settingsBlobGrid.innerHTML = '';
+            bookmarks.forEach((item) => {
+                const card = document.createElement('article');
+                card.className = 'settings-blob-card';
+                card.innerHTML = `
+                    <div class="settings-blob-top">
+                        <div>
+                            <div class="settings-blob-title">${item.label}</div>
+                            <div class="settings-blob-url">${item.url}</div>
+                        </div>
+                        <button class="settings-blob-load" type="button">Load</button>
+                    </div>
+                    <div class="settings-blob-frame-wrap">
+                        <iframe class="settings-blob-frame" title="${item.label} preview" loading="lazy" src="${item.url}"></iframe>
+                    </div>
+                `;
+
+                const loadButton = card.querySelector('.settings-blob-load');
+                loadButton.addEventListener('click', () => {
+                    loadSite(item.url);
+                    closeSettings();
+                });
+                settingsBlobGrid.appendChild(card);
+            });
+        }
+
+        function updateStudyClock() {
+            const now = new Date();
+            studyClock.textContent = `Focus Session • ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        function enterStudyMode() {
+            if (body.classList.contains('study-mode')) {
+                return;
+            }
+            body.classList.add('study-mode');
+            setStatus('Study Guide Mode', 'ready');
+            updateStudyClock();
+            studyClockTimer = window.setInterval(updateStudyClock, 1000);
+        }
+
+        function exitStudyMode() {
+            if (!body.classList.contains('study-mode')) {
+                return;
+            }
+            body.classList.remove('study-mode');
+            if (studyClockTimer) {
+                window.clearInterval(studyClockTimer);
+                studyClockTimer = null;
+            }
+            if (currentUrl) {
+                setStatus('Live Preview Ready', 'ready');
+            } else {
+                setStatus('Idle');
+            }
+        }
+
+        function openSettings() {
+            renderSettingsBlobs();
+            settingsModal.classList.add('open');
+        }
+
+        function closeSettings() {
+            settingsModal.classList.remove('open');
+        }
+
+        function markActiveTheme(theme) {
+            themeOptions.forEach((option) => {
+                const isActive = option.dataset.themeOption === theme;
+                option.classList.toggle('active', isActive);
+            });
+        }
+
+        function applyTheme(theme) {
+            const nextTheme = theme === 'ocean' || theme === 'midnight' ? theme : 'warm';
+            if (nextTheme === 'warm') {
+                body.removeAttribute('data-theme');
+            } else {
+                body.setAttribute('data-theme', nextTheme);
+            }
+            localStorage.setItem(THEME_KEY, nextTheme);
+            markActiveTheme(nextTheme);
+        }
+
+        function applyBlobView(enabled) {
+            body.classList.toggle('blob-view', Boolean(enabled));
+            localStorage.setItem(BLOB_VIEW_KEY, enabled ? '1' : '0');
+        }
+
+        function applyAutoBlobView(enabled) {
+            autoBlobView = Boolean(enabled);
+            blobViewToggle.checked = autoBlobView;
+            localStorage.setItem(AUTO_BLOB_KEY, autoBlobView ? '1' : '0');
+        }
+
+        loadBtn.addEventListener('click', loadCustomUrl);
+        openTabBtn.addEventListener('click', openInTab);
+        settingsBtn.addEventListener('click', openSettings);
+        closeSettingsBtn.addEventListener('click', closeSettings);
+        themeOptions.forEach((option) => {
+            option.addEventListener('click', () => {
+                applyTheme(option.dataset.themeOption);
+            });
+        });
+        blobViewToggle.addEventListener('change', () => {
+            applyAutoBlobView(blobViewToggle.checked);
+        });
+        settingsModal.addEventListener('click', (event) => {
+            if (event.target === settingsModal) {
+                closeSettings();
+            }
+        });
+        urlInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                loadCustomUrl();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'e') {
+                event.preventDefault();
+                enterStudyMode();
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                closeSettings();
+                exitStudyMode();
+            }
+        });
+
+        renderBookmarks();
+        renderSettingsBlobs();
+        applyTheme(localStorage.getItem(THEME_KEY) || 'warm');
+        const savedAutoBlob = localStorage.getItem(AUTO_BLOB_KEY);
+        const autoBlobEnabled = savedAutoBlob === null ? localStorage.getItem(BLOB_VIEW_KEY) === '1' : savedAutoBlob === '1';
+        applyAutoBlobView(autoBlobEnabled);
+        applyBlobView(autoBlobEnabled);
+        setCurrentUrl('');
+        body.classList.add('gg-locked');
+        document.addEventListener('keydown', trackUnlockSequence, true);
+    </script>
+</body>
+</html>

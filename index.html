@@ -331,8 +331,23 @@
 
         .searchbar {
             display: grid;
-            grid-template-columns: 1fr auto auto auto;
+            grid-template-columns: 1fr auto auto auto auto;
             gap: 10px;
+        }
+
+        .btn-fullscreen {
+            background: linear-gradient(135deg, #6c5ce7, #a55eea);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-fullscreen svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            flex-shrink: 0;
         }
 
         .input {
@@ -954,6 +969,12 @@
                     <button id="loadBtn" class="btn btn-primary" type="button">Load URL</button>
                     <button id="openTabBtn" class="btn btn-secondary" type="button">Open in Tab</button>
                     <button id="settingsBtn" class="btn btn-tertiary" type="button">Settings</button>
+                    <button id="fullscreenBtn" class="btn btn-fullscreen" type="button">
+                        <svg id="fullscreenIcon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 0h2v6h-6v-2h4v-4z"/>
+                        </svg>
+                        <span id="fullscreenLabel">Fullscreen</span>
+                    </button>
                 </div>
             </section>
 
@@ -1364,6 +1385,28 @@
         setCurrentUrl('');
         body.classList.add('gg-locked');
         document.addEventListener('keydown', trackUnlockSequence, true);
+
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const fullscreenIcon = document.getElementById('fullscreenIcon');
+        const fullscreenLabel = document.getElementById('fullscreenLabel');
+
+        function updateFullscreenButton() {
+            const isFs = !!document.fullscreenElement;
+            fullscreenLabel.textContent = isFs ? 'Exit Fullscreen' : 'Fullscreen';
+            fullscreenIcon.innerHTML = isFs
+                ? '<path d="M9 3v2H5v4H3V3h6zm6 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 0h2v6h-6v-2h4v-4z"/>'
+                : '<path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 0h2v6h-6v-2h4v-4z"/>';
+        }
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
     </script>
 </body>
 </html>

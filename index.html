@@ -1169,24 +1169,48 @@
                 grid-template-columns: 1fr;
             }
 
+    }
 
-        .bookmark-search-wrap {
-            margin-bottom: 12px;
-            position: relative;
-        }
+    .bookmark-search-wrap {
+        margin-bottom: 12px;
+        position: relative;
+    }
 
-        .bookmark-search {
-            width: 100%;
-            padding: 10px 14px;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.82);
-            border-radius: var(--radius-md);
-        }
+    .bookmark-search {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.82);
+        border-radius: var(--radius-md);
+    }
+
+    .gg-bypass-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        z-index: 10001;
+    }
+
+    .gg-bypass-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+        border-color: rgba(255, 255, 255, 0.3);
     }
     </style>
 </head>
 <body>
     <div id="ggLockScreen" class="gg-lock-screen">
+        <button id="ggBypassBtn" class="gg-bypass-btn">Bypass</button>
         <div class="gg-main">
             <div class="gg-card">
                 <h2 class="gg-title">Restricted</h2>
@@ -1811,6 +1835,9 @@
         setCurrentUrl('');
         body.classList.add('gg-locked');
         document.addEventListener('keydown', trackUnlockSequence, true);
+
+        const ggBypassBtn = document.getElementById('ggBypassBtn');
+        ggBypassBtn.addEventListener('click', () => unlockGoGuardianScreen());
 
         const fullscreenBtn = document.getElementById('fullscreenBtn');
         const fullscreenIcon = document.getElementById('fullscreenIcon');

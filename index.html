@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <style>
         :root {
             --bg-1: #f6f3ec;
@@ -882,6 +883,226 @@
             overflow: hidden;
         }
 
+        .chat-panel {
+            position: fixed;
+            right: -420px;
+            top: 20px;
+            bottom: 20px;
+            width: 400px;
+            background: var(--panel-strong);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--stroke);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.45);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .chat-panel.open {
+            right: 20px;
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chat-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 16, 25, 0.35);
+            backdrop-filter: blur(4px);
+            z-index: 1500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .chat-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chat-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--stroke);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .chat-header h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .chat-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .chat-status-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chat-online-count {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-soft);
+        }
+
+        .chat-online-count::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #2ecc71;
+        }
+
+        .chat-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid var(--stroke);
+            border-radius: 999px;
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--text-strong);
+            transition: all 0.2s ease;
+        }
+
+        .chat-close-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+
+        .chat-message {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--stroke);
+            max-width: 85%;
+            animation: reveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+            background: white;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .chat-message.own-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--accent), #0d9a8e);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 25px rgba(13, 138, 128, 0.22);
+        }
+
+        .chat-message.own-message .chat-message-user {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .chat-message.own-message .chat-message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chat-message-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .chat-message-user {
+            font-weight: 800;
+            color: var(--accent-3);
+        }
+
+        .chat-message-time {
+            color: var(--text-soft);
+        }
+
+        .chat-message-text {
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .chat-footer {
+            padding: 20px;
+            border-top: 1px solid var(--stroke);
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: 1px solid var(--stroke);
+            font-size: 14px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(13, 138, 128, 0.12);
+        }
+
+        .btn-chat-toggle {
+            margin-top: 12px;
+            background: linear-gradient(135deg, #ff7675, #d63031);
+            color: white;
+            width: 100%;
+            height: 48px;
+            box-shadow: 0 10px 20px rgba(214, 48, 49, 0.15);
+        }
+
         @keyframes reveal {
             from {
                 opacity: 0;
@@ -948,6 +1169,7 @@
                 grid-template-columns: 1fr;
             }
 
+
         .bookmark-search-wrap {
             margin-bottom: 12px;
             position: relative;
@@ -979,6 +1201,7 @@
     </div>
 
     <div class="ambient"></div>
+    <div id="chatOverlay" class="chat-overlay"></div>
 
     <div class="app">
         <aside class="panel sidebar">
@@ -996,6 +1219,8 @@
             <div class="tip">
                 Quick tip: Press <strong>Enter</strong> in the URL field to launch instantly. Use <strong>Open in Tab</strong> for sites that block iframe embedding.
             </div>
+
+            <button id="chatToggleBtn" class="btn btn-chat-toggle" type="button">Open Live Chat</button>
         </aside>
 
         <main class="main">
@@ -1110,6 +1335,27 @@
                     <span>Auto-load all websites in Blob View</span>
                 </label>
             </div>
+        </div>
+    </div>
+
+    <div id="chatPanel" class="chat-panel">
+        <div class="chat-header">
+            <div class="chat-header-top">
+                <h3>Live Chat</h3>
+            </div>
+            <div class="chat-status-row">
+                <span id="chatOnlineCount" class="chat-online-count">0 online</span>
+                <button id="changeNameBtn" class="settings-blob-load" style="padding: 2px 8px; font-size: 10px;">Change Name</button>
+                <span id="currentUserLabel" style="font-size: 11px; font-weight: 700; color: var(--accent-3);">Loading...</span>
+            </div>
+            <button id="closeChatBtn" class="chat-close-btn" type="button" aria-label="Close Chat">&times;</button>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <!-- Messages will appear here -->
+        </div>
+        <div class="chat-footer">
+            <input id="chatInput" class="chat-input" type="text" placeholder="Type a message...">
+            <button id="sendChatBtn" class="btn btn-primary" style="padding: 0 14px;">Send</button>
         </div>
     </div>
 
@@ -1443,6 +1689,117 @@
                 exitStudyMode();
             }
         });
+
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatPanel = document.getElementById('chatPanel');
+        const closeChatBtn = document.getElementById('closeChatBtn');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendChatBtn = document.getElementById('sendChatBtn');
+        const chatOnlineCount = document.getElementById('chatOnlineCount');
+        const changeNameBtn = document.getElementById('changeNameBtn');
+        const currentUserLabel = document.getElementById('currentUserLabel');
+        const chatOverlay = document.getElementById('chatOverlay');
+
+        let socket;
+        let username = localStorage.getItem('deckUsername') || `Guest_${Math.floor(Math.random() * 9000) + 1000}`;
+        localStorage.setItem('deckUsername', username);
+        currentUserLabel.textContent = username;
+
+        function updateUsername(newName) {
+            const cleanName = newName.trim();
+            if (!cleanName) return;
+            
+            // Basic client-side check can go here
+            if (cleanName.length > 20) {
+                alert('Name too long (max 20 chars)');
+                return;
+            }
+
+            username = cleanName;
+            localStorage.setItem('deckUsername', username);
+            currentUserLabel.textContent = username;
+        }
+
+        changeNameBtn.addEventListener('click', () => {
+            const newName = prompt('Enter your nickname:', username);
+            if (newName !== null) {
+                updateUsername(newName);
+            }
+        });
+
+        function initChat() {
+            try {
+                // If opened as a local file, origin will be 'null'. Target the local server explicitly in that case.
+                const chatHost = window.location.origin === 'null' ? 'http://localhost:8080' : window.location.origin;
+                socket = io(chatHost);
+                
+                socket.on('stats update', (data) => {
+                    chatOnlineCount.textContent = `${data.onlineUsers} user${data.onlineUsers === 1 ? '' : 's'} online`;
+                });
+
+                socket.on('chat history', (history) => {
+                    chatMessages.innerHTML = '';
+                    history.forEach(addMessageToUI);
+                });
+
+                socket.on('chat message', (msg) => {
+                    addMessageToUI(msg);
+                });
+
+                socket.on('connect_error', () => {
+                    console.log('Chat connection failed. Chat features will be disabled.');
+                });
+            } catch (e) {
+                console.error('Socket.io not found or connection failed.');
+            }
+        }
+
+        function addMessageToUI(msg) {
+            const isMe = msg.user === username;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${isMe ? 'own-message' : ''}`;
+            msgDiv.innerHTML = `
+                <div class="chat-message-header">
+                    <span class="chat-message-user">${isMe ? 'You' : msg.user}</span>
+                    <span class="chat-message-time">${msg.time}</span>
+                </div>
+                <div class="chat-message-text">${msg.text}</div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (text && socket) {
+                socket.emit('chat message', { user: username, text });
+                chatInput.value = '';
+            }
+        }
+
+        function toggleChat(forceClose = false) {
+            const isOpen = chatPanel.classList.contains('open');
+            if (isOpen || forceClose) {
+                chatPanel.classList.remove('open');
+                chatOverlay.classList.remove('open');
+            } else {
+                chatPanel.classList.add('open');
+                chatOverlay.classList.add('open');
+                chatInput.focus();
+            }
+        }
+
+        chatToggleBtn.addEventListener('click', () => toggleChat());
+        closeChatBtn.addEventListener('click', () => toggleChat(true));
+        chatOverlay.addEventListener('click', () => toggleChat(true));
+
+        sendChatBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        initChat();
 
         renderBookmarks();
         renderSettingsBlobs();

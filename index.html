@@ -1056,6 +1056,31 @@
             opacity: 0.6;
         }
 
+        .chat-message.system-message {
+            align-self: center;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            max-width: 95%;
+            font-weight: 700;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.4);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .chat-message.system-message .chat-message-user {
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
         .chat-message-header {
             display: flex;
             justify-content: space-between;
@@ -1216,6 +1241,161 @@
         background: rgba(255, 255, 255, 0.1);
         color: rgba(255, 255, 255, 0.8);
         border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Admin Panel Styles */
+    .admin-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(20px);
+        display: grid;
+        place-items: center;
+        z-index: 20000;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .admin-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .admin-panel {
+        width: 100%;
+        max-width: 600px;
+        background: rgba(20, 20, 20, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 40px;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .admin-overlay.open .admin-panel {
+        transform: translateY(0);
+    }
+
+    .admin-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .admin-header h2 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 32px;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        margin: 0;
+        background: linear-gradient(90deg, #ff0055, #00ffcc);
+        -webkit-background-clip: text;
+        background-clip: text; /* Fixed lint: added standard property */
+        -webkit-text-fill-color: transparent;
+    }
+
+    .admin-section {
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .admin-section:last-child {
+        border-bottom: none;
+    }
+
+    .admin-section h4 {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+    }
+
+    .admin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .admin-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 14px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .admin-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .admin-btn-danger:hover {
+        background: rgba(231, 76, 60, 0.2);
+        border-color: #e74c3c;
+    }
+
+    .admin-input-wrap {
+        display: flex;
+        gap: 8px;
+    }
+
+    .admin-input {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: white;
+        font-size: 14px;
+    }
+
+    .admin-input:focus {
+        border-color: #00ffcc;
+        outline: none;
+    }
+
+    .admin-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .admin-close:hover {
+        color: white;
+    }
+
+    body.overdrive::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        border: 4px solid #00ffcc;
+        animation: borderPulse 2s infinite linear;
+        pointer-events: none;
+        z-index: 30000;
+    }
+
+    @keyframes borderPulse {
+        0% { border-color: #ff0055; filter: hue-rotate(0deg); }
+        50% { border-color: #00ffcc; filter: hue-rotate(180deg); }
+        100% { border-color: #ff0055; filter: hue-rotate(360deg); }
     }
     </style>
 </head>
@@ -1394,6 +1574,44 @@
         </div>
     </div>
 
+    <!-- Super Secret Admin Panel -->
+    <div id="adminOverlay" class="admin-overlay">
+        <div class="admin-panel">
+            <button id="closeAdminBtn" class="admin-close" aria-label="Close Panel">&times;</button>
+            <div class="admin-header">
+                <h2>Admin Hub</h2>
+                <p style="color: rgba(255,255,255,0.4); font-size: 12px;">System Override Enabled</p>
+            </div>
+
+            <div class="admin-section">
+                <h4>System Moderation</h4>
+                <div class="admin-grid">
+                    <button id="adminClearChat" class="admin-btn admin-btn-danger">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                        Clear History
+                    </button>
+                    <button id="adminOverdrive" class="admin-btn">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/></svg>
+                        Overdrive Mode
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>Global Broadcast</h4>
+                <div class="admin-input-wrap">
+                    <input id="adminBroadcastInput" class="admin-input" type="text" placeholder="Send system-wide alert...">
+                    <button id="adminBroadcastBtn" class="admin-btn">Broadcast</button>
+                </div>
+            </div>
+
+            <article class="study-card" style="background: rgba(255,255,255,0.05); margin-top: 20px;">
+                <h3 style="font-size: 14px;">Operational Awareness</h3>
+                <p style="color: var(--text-soft); font-size: 13px;">Use tools responsibly. All administrative actions are logged to the central server console.</p>
+            </article>
+        </div>
+    </div>
+
     <script>
         const bookmarks = [
             { label: 'chudportal 1', url: 'https://studyinglessonsforall.b-cdn.net' },
@@ -1451,6 +1669,9 @@
         const unlockSequence = ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowDown'];
         let unlockProgress = 0;
 
+        const adminSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowLeft'];
+        let adminProgress = 0;
+
         function unlockGoGuardianScreen() {
             ggLockScreen.classList.add('hidden');
             body.classList.remove('gg-locked');
@@ -1458,6 +1679,17 @@
         }
 
         function trackUnlockSequence(event) {
+            // Track Admin Sequence
+            if (event.key === adminSequence[adminProgress]) {
+                adminProgress++;
+                if (adminProgress === adminSequence.length) {
+                    toggleAdminPanel();
+                    adminProgress = 0;
+                }
+            } else {
+                adminProgress = event.key === adminSequence[0] ? 1 : 0;
+            }
+
             if (ggLockScreen.classList.contains('hidden')) {
                 return;
             }
@@ -1792,8 +2024,9 @@
 
         function addMessageToUI(msg) {
             const isMe = msg.user === username;
+            const isSystem = msg.user === 'SYSTEM' || msg.isSystem;
             const msgDiv = document.createElement('div');
-            msgDiv.className = `chat-message ${isMe ? 'own-message' : ''}`;
+            msgDiv.className = `chat-message ${isMe ? 'own-message' : ''} ${isSystem ? 'system-message' : ''}`;
             msgDiv.innerHTML = `
                 <div class="chat-message-header">
                     <span class="chat-message-user">${isMe ? 'You' : msg.user}</span>
@@ -1824,6 +2057,48 @@
                 chatInput.focus();
             }
         }
+
+        const adminOverlay = document.getElementById('adminOverlay');
+        const closeAdminBtn = document.getElementById('closeAdminBtn');
+        const adminClearChat = document.getElementById('adminClearChat');
+        const adminOverdrive = document.getElementById('adminOverdrive');
+        const adminBroadcastInput = document.getElementById('adminBroadcastInput');
+        const adminBroadcastBtn = document.getElementById('adminBroadcastBtn');
+
+        function toggleAdminPanel(forceClose = false) {
+            const isOpen = adminOverlay.classList.contains('open');
+            if (isOpen || forceClose) {
+                adminOverlay.classList.remove('open');
+            } else {
+                adminOverlay.classList.add('open');
+            }
+        }
+
+        closeAdminBtn.addEventListener('click', () => toggleAdminPanel(true));
+        
+        adminClearChat.addEventListener('click', () => {
+            if (confirm('Clear ALL chat history for everyone?')) {
+                socket.emit('admin:clear_chat');
+            }
+        });
+
+        adminBroadcastBtn.addEventListener('click', () => {
+            const text = adminBroadcastInput.value.trim();
+            if (text) {
+                socket.emit('admin:broadcast', text);
+                adminBroadcastInput.value = '';
+                toggleAdminPanel(true);
+            }
+        });
+
+        adminOverdrive.addEventListener('click', () => {
+            body.classList.toggle('overdrive');
+            toggleAdminPanel(true);
+        });
+
+        adminOverlay.addEventListener('click', (e) => {
+            if (e.target === adminOverlay) toggleAdminPanel(true);
+        });
 
         chatToggleBtn.addEventListener('click', () => toggleChat());
         closeChatBtn.addEventListener('click', () => toggleChat(true));

@@ -100,6 +100,27 @@ io.on('connection', (socket) => {
     io.emit('chat message', msg);
   });
 
+  // Admin Events
+  socket.on('admin:broadcast', (text) => {
+    console.log(`Admin Broadcast: ${text}`);
+    const msg = {
+      id: Date.now() + Math.random(),
+      timestamp: Date.now(),
+      user: 'SYSTEM',
+      text: filterText(text),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isSystem: true
+    };
+    chatHistory.push(msg);
+    io.emit('chat message', msg);
+  });
+
+  socket.on('admin:clear_chat', () => {
+    console.log('Admin: Clearing chat history');
+    chatHistory = [];
+    io.emit('chat history', []);
+  });
+
   socket.on('disconnect', () => {
     onlineUsers = Math.max(0, onlineUsers - 1);
     console.log(`User disconnected. Total: ${onlineUsers}`);

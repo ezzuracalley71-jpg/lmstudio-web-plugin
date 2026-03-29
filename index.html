@@ -947,7 +947,20 @@
             .theme-grid {
                 grid-template-columns: 1fr;
             }
+
+        .bookmark-search-wrap {
+            margin-bottom: 12px;
+            position: relative;
         }
+
+        .bookmark-search {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.82);
+            border-radius: var(--radius-md);
+        }
+    }
     </style>
 </head>
 <body>
@@ -972,6 +985,10 @@
             <div class="brand">
                 <h1>Launch Deck</h1>
                 <p>One control panel for your favorite web destinations.</p>
+            </div>
+
+            <div class="bookmark-search-wrap">
+                <input id="bookmarkSearch" class="input bookmark-search" type="text" placeholder="Search bookmarks...">
             </div>
 
             <div id="bookmarkList" class="bookmark-list"></div>
@@ -1117,10 +1134,14 @@
             { label: 'classroom spot 4', url: 'https://class.b-cdn.net/' },
             { label: 'classroom spot 5', url: 'https://linewize.b-cdn.net/' },
             { label: 'classroom spot 6', url: 'https://blocker.b-cdn.net/' },
-            { label: 'classroom spot 7', url: 'https://csss.b-cdn.net/' }
+            { label: 'classroom spot 7', url: 'https://csss.b-cdn.net/' },
+            { label: 'classroom spot 8', url: 'https://classroomspot.pages.dev/' },
+            { label: 'classroom spot 9', url: 'https://ixlmath.b-cdn.net/' },
+            { label: 'classroom spot 10', url: 'https://www.classroomspotgames.fun/' }
         ];
 
         const bookmarkList = document.getElementById('bookmarkList');
+        const bookmarkSearch = document.getElementById('bookmarkSearch');
         const urlInput = document.getElementById('urlInput');
         const loadBtn = document.getElementById('loadBtn');
         const openTabBtn = document.getElementById('openTabBtn');
@@ -1268,8 +1289,20 @@
         }
 
         function renderBookmarks() {
+            const query = bookmarkSearch.value.toLowerCase().trim();
             bookmarkList.innerHTML = '';
-            bookmarks.forEach((item) => {
+            
+            const filtered = bookmarks.filter(item => 
+                item.label.toLowerCase().includes(query) || 
+                item.url.toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                bookmarkList.innerHTML = '<div style="padding: 14px; color: var(--text-soft); font-size: 14px; text-align: center;">No matches found</div>';
+                return;
+            }
+
+            filtered.forEach((item) => {
                 const button = document.createElement('button');
                 button.className = 'bookmark';
                 button.type = 'button';
@@ -1392,6 +1425,7 @@
                 closeSettings();
             }
         });
+        bookmarkSearch.addEventListener('input', renderBookmarks);
         urlInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 loadCustomUrl();

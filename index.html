@@ -148,6 +148,30 @@
         .bookmark-list {
             display: grid;
             gap: 10px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-bottom: 18px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) rgba(0, 0, 0, 0.05);
+        }
+
+        .bookmark-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .bookmark-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .bookmark-list::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+
+        .bookmark-list::-webkit-scrollbar-thumb:hover {
+            background: #0b7a70;
         }
 
         .bookmark {
@@ -1086,7 +1110,14 @@
             { label: 'Gn math', url: 'https://mining.blooket.com/gs/Z24tbWF0aC5kZXY=/' },
             { label: 'study40', url: 'https://biolyze.space' },
             { label: 'flux', url: 'https://testomgsasdad.b-cdn.net/' },
-            { label: 'flux 2', url: 'https://testomgsasda.b-cdn.net/' }
+            { label: 'flux 2', url: 'https://testomgsasda.b-cdn.net/' },
+            { label: 'classroom spot 1', url: 'https://googlesildes.b-cdn.net/' },
+            { label: 'classroom spot 2', url: 'https://googleclassroom.b-cdn.net/' },
+            { label: 'classroom spot 3', url: 'https://zern.b-cdn.net/' },
+            { label: 'classroom spot 4', url: 'https://class.b-cdn.net/' },
+            { label: 'classroom spot 5', url: 'https://linewize.b-cdn.net/' },
+            { label: 'classroom spot 6', url: 'https://blocker.b-cdn.net/' },
+            { label: 'classroom spot 7', url: 'https://csss.b-cdn.net/' }
         ];
 
         const bookmarkList = document.getElementById('bookmarkList');

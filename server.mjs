@@ -70,6 +70,7 @@ function cleanupHistory() {
 
 io.on('connection', (socket) => {
   onlineUsers++;
+  console.log(`User connected. Total: ${onlineUsers}`);
   io.emit('stats update', { onlineUsers });
   
   cleanupHistory();
@@ -77,6 +78,7 @@ io.on('connection', (socket) => {
 
   socket.on('chat message', (data) => {
     cleanupHistory();
+    console.log(`Message from ${data.user}: ${data.text}`);
     
     // Filter both user name and message text
     const cleanUser = filterText(data.user || 'Anonymous');
@@ -100,6 +102,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     onlineUsers = Math.max(0, onlineUsers - 1);
+    console.log(`User disconnected. Total: ${onlineUsers}`);
     io.emit('stats update', { onlineUsers });
   });
 });

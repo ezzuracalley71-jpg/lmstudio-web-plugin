@@ -2155,21 +2155,50 @@
     e.returnValue = '';
   });
 
-  // F key = fullscreen the frame panel
+  // F key = expand iframe to fill entire page
+  const _fsStyle = document.createElement('style');
+  _fsStyle.textContent = `
+    body.frame-fullscreen .sidebar,
+    body.frame-fullscreen .main,
+    body.frame-fullscreen .chat-panel,
+    body.frame-fullscreen .topbar,
+    body.frame-fullscreen .frame-shell > *:not(#mainFrame),
+    body.frame-fullscreen .overlay { display: none !important; }
+    body.frame-fullscreen .app {
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: 100% !important;
+    }
+    body.frame-fullscreen .frame-wrap {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      z-index: 99999 !important;
+    }
+    body.frame-fullscreen .frame-shell {
+      border-radius: 0 !important;
+      border: none !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+    }
+    body.frame-fullscreen #mainFrame {
+      border-radius: 0 !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  `;
+  document.head.appendChild(_fsStyle);
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'f' || e.key === 'F') {
-      // Don't trigger if user is typing in an input/textarea
       const tag = document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-
-      const frameWrap = document.querySelector('.frame-wrap');
-      if (!frameWrap) return;
-
-      if (!document.fullscreenElement) {
-        frameWrap.requestFullscreen().catch(() => {});
-      } else {
-        document.exitFullscreen().catch(() => {});
-      }
+      document.body.classList.toggle('frame-fullscreen');
     }
   });
 </script>

@@ -2411,8 +2411,12 @@
         adminBroadcastBtn.addEventListener('click', () => {
             const text = adminBroadcastInput.value.trim();
             if (text) {
-                socket.emit('admin:broadcast', text);
-                socket.emit('admin:announce_banner', text);
+                if (socket) {
+                    socket.emit('admin:broadcast', text);
+                    socket.emit('admin:announce_banner', text);
+                }
+                // Show banner on admin's own screen immediately
+                showBanner(text);
                 adminBroadcastInput.value = '';
                 toggleAdminPanel(true);
             }

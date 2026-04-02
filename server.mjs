@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, normalize, extname } from 'node:path';
 import { Server } from 'socket.io';
+import { handleProxy } from './proxy.mjs';
 
 const port = Number(process.env.PORT || 8080);
 const host = process.env.HOST || '0.0.0.0';
@@ -20,7 +21,16 @@ const mimeTypes = {
   '.txt': 'text/plain; charset=utf-8'
 };
 
+const PROXY_BASE = '/proxy';
+
 const server = createServer(async (req, res) => {
+  // ── Proxy requests ──────────────────────────────────────────
+  const reqPath = (req.url || '/').split('?')[0];
+  if (reqPath === PROXY_BASE) {
+    await handleProxy(req, res, PROXY_BASE);
+    return;
+  }
+
   try {
     const rawPath = (req.url || '/').split('?')[0];
     const safePath = normalize(rawPath).replace(/^([.][.][/\\])+/, '');
@@ -158,6 +168,28 @@ io.on('connection', (socket) => {
     };
     chatHistory.push(msg);
     io.emit('chat message', msg);
+  });
+
+  // Force all users to load a URL
+  socket.on('admin:force_url', (url) => {
+    if (!url) return;
+    const clean = String(url).slice(0, 500);
+    console.log(`Admin forcing URL: ${clean}`);
+    io.emit('admin:force_url', clean);
+  });
+
+  // Lock/unlock site for all users
+  socket.on('admin:set_lock', (locked) => {
+    const state = Boolean(locked);
+    console.log(`Admin ${state ? 'locked' : 'unlocked'} the site`);
+    io.emit('admin:lock_state', state);
+  });
+
+  socket.on('admin:announce_banner', (text) => {
+    if (!text) return;
+    const clean = String(text).slice(0, 300);
+    console.log(`Admin banner: ${clean}`);
+    io.emit('announce:banner', clean);
   });
 
   socket.on('admin:clear_chat', () => {

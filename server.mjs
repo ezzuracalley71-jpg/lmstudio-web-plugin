@@ -50,6 +50,9 @@ const MAX_HISTORY = 50;
 const HISTORY_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 let onlineUsers = 0;
 
+// Server-side bookmark store â€” starts empty, synced from admin
+let serverBookmarks = null;
+
 // Add words to this list to filter them out of usernames and messages
 const BANNED_WORDS = ['badword1', 'badword2', 'inappropriate', 'spam'];
 
@@ -119,6 +122,22 @@ io.on('connection', (socket) => {
     console.log('Admin: Clearing chat history');
     chatHistory = [];
     io.emit('chat history', []);
+  });
+
+  // Bookmark sync
+  socket.on('bookmarks:get', () => {
+    if (serverBookmarks) socket.emit('bookmarks:update', serverBookmarks);
+  });
+
+  socket.on('admin:set_bookmarks', (data) => {
+    if (!Array.isArray(data)) return;
+    // Sanitise
+    serverBookmarks = data.map(b => ({
+      label: String(b.label || '').slice(0, 100),
+      url:   String(b.url   || '').slice(0, 500)
+    }));
+    console.log(`Admin updated bookmarks (${serverBookmarks.length} items)`);
+    io.emit('bookmarks:update', serverBookmarks);
   });
 
   socket.on('disconnect', () => {

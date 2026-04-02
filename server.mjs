@@ -2,7 +2,6 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, normalize, extname } from 'node:path';
 import { Server } from 'socket.io';
-import { handleProxy } from './proxy.mjs';
 
 const port = Number(process.env.PORT || 8080);
 const host = process.env.HOST || '0.0.0.0';
@@ -21,16 +20,7 @@ const mimeTypes = {
   '.txt': 'text/plain; charset=utf-8'
 };
 
-const PROXY_BASE = '/proxy';
-
 const server = createServer(async (req, res) => {
-  // ── Proxy requests ──────────────────────────────────────────
-  const reqPath = (req.url || '/').split('?')[0];
-  if (reqPath === PROXY_BASE) {
-    await handleProxy(req, res, PROXY_BASE);
-    return;
-  }
-
   try {
     const rawPath = (req.url || '/').split('?')[0];
     const safePath = normalize(rawPath).replace(/^([.][.][/\\])+/, '');

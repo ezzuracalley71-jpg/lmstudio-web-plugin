@@ -1207,6 +1207,17 @@
 
     }
 
+    .bookmark[draggable] { cursor: grab; }
+    .bookmark[draggable]:active { cursor: grabbing; }
+    .bookmark.drag-over {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 2px rgba(13,138,128,0.4) !important;
+        transform: scale(1.01);
+    }
+    .bookmark.dragging {
+        opacity: 0.4;
+    }
+
     .bookmark-search-wrap {
         margin-bottom: 12px;
         position: relative;
@@ -1459,8 +1470,9 @@
                 <p>One control panel for your favorite web destinations.</p>
             </div>
 
-            <div class="bookmark-search-wrap">
-                <input id="bookmarkSearch" class="input bookmark-search" type="text" placeholder="Search bookmarks...">
+            <div class="bookmark-search-wrap" style="display:flex;gap:8px;align-items:center;">
+                <input id="bookmarkSearch" class="input bookmark-search" type="text" placeholder="Search bookmarks..." style="flex:1;">
+                <button id="addBookmarkBtn" type="button" title="Add bookmark" style="flex-shrink:0;width:38px;height:38px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),#13a092);color:white;font-size:22px;cursor:pointer;display:grid;place-items:center;line-height:1;opacity:0;pointer-events:none;transition:opacity 0.3s ease;">+</button>
             </div>
 
             <div id="bookmarkList" class="bookmark-list"></div>
@@ -1842,12 +1854,14 @@
             }
         }
 
+        let dragSrcIndex = null;
+
         function renderBookmarks() {
             const query = bookmarkSearch.value.toLowerCase().trim();
             bookmarkList.innerHTML = '';
-            
-            const filtered = bookmarks.filter(item => 
-                item.label.toLowerCase().includes(query) || 
+
+            const filtered = bookmarks.filter(item =>
+                item.label.toLowerCase().includes(query) ||
                 item.url.toLowerCase().includes(query)
             );
 
@@ -1856,15 +1870,73 @@
                 return;
             }
 
+            // Only enable drag when not searching
+            const isDraggable = !query;
+
             filtered.forEach((item) => {
+                // Find real index in bookmarks array for drag reordering
+                const realIndex = bookmarks.indexOf(item);
                 const button = document.createElement('button');
                 button.className = 'bookmark';
                 button.type = 'button';
+                button.dataset.index = realIndex;
                 button.innerHTML = `<div class="bookmark-title">${item.label}</div><div class="bookmark-url">${item.url}</div>`;
                 button.addEventListener('click', () => loadSite(item.url, button));
+
+                if (isDraggable && isAdminUnlocked) {
+                    button.draggable = true;
+
+                    button.addEventListener('dragstart', (e) => {
+                        dragSrcIndex = realIndex;
+                        button.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+
+                    button.addEventListener('dragend', () => {
+                        button.classList.remove('dragging');
+                        bookmarkList.querySelectorAll('.bookmark').forEach(b => b.classList.remove('drag-over'));
+                    });
+
+                    button.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        bookmarkList.querySelectorAll('.bookmark').forEach(b => b.classList.remove('drag-over'));
+                        button.classList.add('drag-over');
+                    });
+
+                    button.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const targetIndex = parseInt(button.dataset.index);
+                        if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
+
+                        // Reorder bookmarks array
+                        const moved = bookmarks.splice(dragSrcIndex, 1)[0];
+                        bookmarks.splice(targetIndex, 0, moved);
+                        dragSrcIndex = null;
+
+                        if (typeof pushBookmarks === 'function') pushBookmarks();
+                        else renderBookmarks();
+                    });
+                }
+
                 bookmarkList.appendChild(button);
             });
         }
+
+        // + Add bookmark button — admin only
+        let isAdminUnlocked = false;
+
+        document.getElementById('addBookmarkBtn').addEventListener('click', () => {
+            if (!isAdminUnlocked) return;
+            const label = prompt('Bookmark name:');
+            if (!label) return;
+            const url = prompt('URL (e.g. https://example.com):');
+            if (!url) return;
+            const normalized = /^https?:\/\//i.test(url.trim()) ? url.trim() : 'https://' + url.trim();
+            bookmarks.push({ label: label.trim(), url: normalized });
+            if (typeof pushBookmarks === 'function') pushBookmarks();
+            else { renderBookmarks(); renderSettingsBlobs(); }
+        });
 
         function renderSettingsBlobs() {
             settingsBlobGrid.innerHTML = '';
@@ -2119,8 +2191,12 @@
             if (isOpen || forceClose) {
                 adminOverlay.classList.remove('open');
             } else {
+                isAdminUnlocked = true;
+                document.getElementById('addBookmarkBtn').style.opacity = '1';
+                document.getElementById('addBookmarkBtn').style.pointerEvents = 'auto';
                 adminOverlay.classList.add('open');
                 renderAdminBookmarks();
+                renderBookmarks(); // re-render to enable drag handles
             }
         }
 

@@ -1367,6 +1367,40 @@
         outline: none;
     }
 
+    .admin-bookmark-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 6px;
+        align-items: center;
+    }
+    .admin-bookmark-row input {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 13px;
+        padding: 7px 10px;
+        outline: none;
+        width: 100%;
+    }
+    .admin-bookmark-row input:focus {
+        border-color: rgba(255,255,255,0.4);
+    }
+    .admin-bookmark-del {
+        background: rgba(191,63,50,0.3);
+        border: none;
+        border-radius: 8px;
+        color: #ff8a80;
+        font-size: 16px;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+    }
+    .admin-bookmark-del:hover { background: rgba(191,63,50,0.6); }
+
     .admin-close {
         position: absolute;
         top: 20px;
@@ -1603,6 +1637,12 @@
                     <input id="adminBroadcastInput" class="admin-input" type="text" placeholder="Send system-wide alert...">
                     <button id="adminBroadcastBtn" class="admin-btn">Broadcast</button>
                 </div>
+            </div>
+
+            <div class="admin-section" id="adminBookmarkSection">
+                <h4>Edit Bookmarks (Everyone)</h4>
+                <div id="adminBookmarkList" style="display:grid;gap:8px;max-height:280px;overflow-y:auto;padding-right:4px;margin-bottom:10px;"></div>
+                <button id="adminAddBookmark" class="admin-btn" style="width:100%;">+ Add Bookmark</button>
             </div>
 
             <article class="study-card" style="background: rgba(255,255,255,0.05); margin-top: 20px;">
@@ -2018,6 +2058,14 @@
                 socket.on('connect_error', () => {
                     console.log('Chat connection failed. Chat features will be disabled.');
                 });
+
+                // Receive global bookmark updates pushed by admin
+                socket.on('bookmarks:update', (data) => {
+                    applyBookmarkUpdate(data);
+                });
+
+                // Request current bookmarks from server on connect
+                socket.emit('bookmarks:get');
             } catch (e) {
                 console.error('Socket.io not found or connection failed.');
             }
@@ -2072,6 +2120,7 @@
                 adminOverlay.classList.remove('open');
             } else {
                 adminOverlay.classList.add('open');
+                renderAdminBookmarks();
             }
         }
 
@@ -2096,6 +2145,66 @@
             body.classList.toggle('overdrive');
             toggleAdminPanel(true);
         });
+
+        // ── Bookmark editor in admin panel ──────────────────────────
+        const adminBookmarkList = document.getElementById('adminBookmarkList');
+        const adminAddBookmark  = document.getElementById('adminAddBookmark');
+
+        function renderAdminBookmarks() {
+            adminBookmarkList.innerHTML = '';
+            bookmarks.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = 'admin-bookmark-row';
+                row.innerHTML = `
+                    <input type="text" placeholder="Name" value="${item.label.replace(/"/g,'&quot;')}" data-i="${i}" data-field="label">
+                    <input type="text" placeholder="URL"  value="${item.url.replace(/"/g,'&quot;')}"   data-i="${i}" data-field="url">
+                    <button class="admin-bookmark-del" data-i="${i}" title="Delete">✕</button>
+                `;
+                adminBookmarkList.appendChild(row);
+            });
+
+            adminBookmarkList.querySelectorAll('input').forEach(inp => {
+                inp.addEventListener('input', () => {
+                    const i = Number(inp.dataset.i);
+                    bookmarks[i][inp.dataset.field] = inp.value;
+                    pushBookmarks();
+                });
+            });
+
+            adminBookmarkList.querySelectorAll('.admin-bookmark-del').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    bookmarks.splice(Number(btn.dataset.i), 1);
+                    pushBookmarks();
+                    renderAdminBookmarks();
+                });
+            });
+        }
+
+        adminAddBookmark.addEventListener('click', () => {
+            bookmarks.push({ label: 'New Bookmark', url: 'https://' });
+            pushBookmarks();
+            renderAdminBookmarks();
+            // scroll to bottom
+            adminBookmarkList.scrollTop = adminBookmarkList.scrollHeight;
+        });
+
+        function pushBookmarks() {
+            if (socket) socket.emit('admin:set_bookmarks', bookmarks);
+            renderBookmarks();
+            renderSettingsBlobs();
+        }
+
+        // Receive bookmark updates from server (pushed to all clients)
+        function applyBookmarkUpdate(data) {
+            bookmarks.length = 0;
+            data.forEach(b => bookmarks.push(b));
+            renderBookmarks();
+            renderSettingsBlobs();
+            renderAdminBookmarks();
+        }
+
+        // Hook into socket setup — we patch after socket is created
+        const _origSocketSetup = window._socketSetup;
 
         adminOverlay.addEventListener('click', (e) => {
             if (e.target === adminOverlay) toggleAdminPanel(true);

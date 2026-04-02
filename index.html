@@ -457,10 +457,170 @@
             color: #8f2f25;
         }
 
+        /* ── Announce banner ── */
+        .announce-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 99998;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 12px 48px 12px 20px;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(231,76,60,0.5);
+            animation: bannerSlide 0.4s cubic-bezier(0.16,1,0.3,1);
+            line-height: 1.4;
+        }
+        .announce-hidden { display: none !important; }
+        @keyframes bannerSlide {
+            from { transform: translateY(-100%); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        .announce-close {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 13px;
+            display: grid;
+            place-items: center;
+        }
+        .announce-close:hover { background: rgba(255,255,255,0.35); }
+
+        /* ── Frame toolbar ── */
+        .frame-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--stroke);
+            background: var(--panel-strong);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            flex-wrap: wrap;
+        }
+
+        .frame-tool-btn {
+            background: var(--panel-strong);
+            border: 1px solid var(--stroke);
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            color: var(--text-strong);
+            transition: background 0.15s, transform 0.15s;
+            flex-shrink: 0;
+        }
+
+        .frame-tool-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .frame-tool-btn:hover {
+            background: rgba(13,138,128,0.12);
+            border-color: rgba(13,138,128,0.4);
+            transform: translateY(-1px);
+        }
+
+        .frame-zoom-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: auto;
+        }
+
+        .frame-zoom-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-soft);
+            min-width: 38px;
+            text-align: center;
+        }
+
+        /* ── PiP ── */
+        .pip-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 360px;
+            height: 240px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+            border: 1px solid var(--stroke);
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s ease;
+            resize: both;
+        }
+
+        .pip-container.pip-hidden { display: none !important; }
+
+        .pip-header {
+            background: rgba(15,20,30,0.92);
+            backdrop-filter: blur(8px);
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .pip-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.7);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        .pip-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .pip-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+        .pip-container iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            opacity: 1;
+            transform: none;
+        }
+
         .frame-wrap {
             position: relative;
-            padding: 12px;
+            padding: 0;
+            padding-bottom: 12px;
+            padding-left: 12px;
+            padding-right: 12px;
             overflow: hidden;
+            border-radius: var(--radius-lg);
         }
 
         .frame-shell {
@@ -1511,6 +1671,24 @@
             </section>
 
             <section class="panel frame-wrap">
+                <div class="frame-toolbar">
+                    <button id="reloadBtn" class="frame-tool-btn" title="Reload">
+                        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    </button>
+                    <div class="frame-zoom-group">
+                        <button id="zoomOutBtn" class="frame-tool-btn" title="Zoom Out">
+                            <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+                        </button>
+                        <span id="zoomLabel" class="frame-zoom-label">100%</span>
+                        <button id="zoomInBtn" class="frame-tool-btn" title="Zoom In">
+                            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        </button>
+                        <button id="zoomResetBtn" class="frame-tool-btn" title="Reset Zoom" style="font-size:11px;font-weight:700;width:auto;padding:0 8px;">Reset</button>
+                    </div>
+                    <button id="pipBtn" class="frame-tool-btn" title="Picture-in-Picture">
+                        <svg viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zm0 16.01H3V4.98h18v14.03z"/></svg>
+                    </button>
+                </div>
                 <div class="frame-shell">
                     <div id="overlay" class="overlay">
                         <div>
@@ -1521,6 +1699,18 @@
                     <iframe id="mainFrame" title="Website preview"></iframe>
                 </div>
             </section>
+
+            <!-- Picture-in-Picture floating frame -->
+            <div id="pipContainer" class="pip-container pip-hidden">
+                <div class="pip-header" id="pipHeader">
+                    <span class="pip-title" id="pipTitle">PiP</span>
+                    <div style="display:flex;gap:4px;">
+                        <button class="pip-btn" id="pipExpandBtn" title="Expand">⤢</button>
+                        <button class="pip-btn" id="pipCloseBtn" title="Close">✕</button>
+                    </div>
+                </div>
+                <iframe id="pipFrame" title="PiP preview"></iframe>
+            </div>
         </main>
 
         <section id="studyGuide" class="panel study-guide">
@@ -1662,6 +1852,12 @@
                 <p style="color: var(--text-soft); font-size: 13px;">Use tools responsibly. All administrative actions are logged to the central server console.</p>
             </article>
         </div>
+    </div>
+
+    <!-- Global announcement banner -->
+    <div id="announceBanner" class="announce-banner announce-hidden">
+        <span id="announceBannerText"></span>
+        <button id="announceBannerClose" class="announce-close">✕</button>
     </div>
 
     <script>
@@ -2127,6 +2323,10 @@
                     addMessageToUI(msg);
                 });
 
+                socket.on('announce:banner', (text) => {
+                    showBanner(text);
+                });
+
                 socket.on('connect_error', () => {
                     console.log('Chat connection failed. Chat features will be disabled.');
                 });
@@ -2212,6 +2412,7 @@
             const text = adminBroadcastInput.value.trim();
             if (text) {
                 socket.emit('admin:broadcast', text);
+                socket.emit('admin:announce_banner', text);
                 adminBroadcastInput.value = '';
                 toggleAdminPanel(true);
             }
@@ -2297,6 +2498,20 @@
 
         initChat();
 
+        // ── Announcement banner ──────────────────────────────────────
+        const announceBanner      = document.getElementById('announceBanner');
+        const announceBannerText  = document.getElementById('announceBannerText');
+        const announceBannerClose = document.getElementById('announceBannerClose');
+
+        function showBanner(text) {
+            announceBannerText.textContent = text;
+            announceBanner.classList.remove('announce-hidden');
+        }
+
+        announceBannerClose.addEventListener('click', () => {
+            announceBanner.classList.add('announce-hidden');
+        });
+
         renderBookmarks();
         renderSettingsBlobs();
         applyTheme(localStorage.getItem(THEME_KEY) || 'warm');
@@ -2311,6 +2526,104 @@
         const ggBypassBtn = document.getElementById('ggBypassBtn');
         ggBypassBtn.addEventListener('click', () => unlockGoGuardianScreen());
 
+        // ── Zoom controls ──────────────────────────────────────────
+        const zoomInBtn    = document.getElementById('zoomInBtn');
+        const zoomOutBtn   = document.getElementById('zoomOutBtn');
+        const zoomResetBtn = document.getElementById('zoomResetBtn');
+        const zoomLabel    = document.getElementById('zoomLabel');
+        const reloadBtn    = document.getElementById('reloadBtn');
+        let zoomLevel = 1;
+        const ZOOM_STEP = 0.1;
+        const ZOOM_MIN  = 0.3;
+        const ZOOM_MAX  = 3;
+
+        function applyZoom() {
+            mainFrame.style.transformOrigin = 'top left';
+            mainFrame.style.transform = `scale(${zoomLevel})`;
+            mainFrame.style.width  = `${100 / zoomLevel}%`;
+            mainFrame.style.height = `${100 / zoomLevel}%`;
+            zoomLabel.textContent  = `${Math.round(zoomLevel * 100)}%`;
+        }
+
+        zoomInBtn.addEventListener('click', () => {
+            zoomLevel = Math.min(ZOOM_MAX, Math.round((zoomLevel + ZOOM_STEP) * 10) / 10);
+            applyZoom();
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            zoomLevel = Math.max(ZOOM_MIN, Math.round((zoomLevel - ZOOM_STEP) * 10) / 10);
+            applyZoom();
+        });
+
+        zoomResetBtn.addEventListener('click', () => {
+            zoomLevel = 1;
+            applyZoom();
+        });
+
+        reloadBtn.addEventListener('click', () => {
+            if (currentUrl) {
+                const src = mainFrame.src;
+                mainFrame.src = '';
+                setTimeout(() => { mainFrame.src = src; }, 50);
+                setStatus('Loading...', 'loading');
+                overlay.classList.remove('hidden');
+                overlay.innerHTML = '<div><strong>Loading</strong><p>Reloading...</p></div>';
+                mainFrame.classList.remove('visible');
+            }
+        });
+
+        // ── Picture-in-Picture ─────────────────────────────────────
+        const pipContainer = document.getElementById('pipContainer');
+        const pipFrame     = document.getElementById('pipFrame');
+        const pipBtn       = document.getElementById('pipBtn');
+        const pipCloseBtn  = document.getElementById('pipCloseBtn');
+        const pipExpandBtn = document.getElementById('pipExpandBtn');
+        const pipHeader    = document.getElementById('pipHeader');
+        const pipTitle     = document.getElementById('pipTitle');
+        let pipActive = false;
+
+        pipBtn.addEventListener('click', () => {
+            if (!currentUrl) return;
+            pipActive = true;
+            pipFrame.src = currentUrl;
+            pipTitle.textContent = currentUrl;
+            pipContainer.classList.remove('pip-hidden');
+        });
+
+        pipCloseBtn.addEventListener('click', () => {
+            pipActive = false;
+            pipContainer.classList.add('pip-hidden');
+            pipFrame.src = '';
+        });
+
+        pipExpandBtn.addEventListener('click', () => {
+            // Swap PiP back into the main frame
+            loadSite(pipFrame.src);
+            pipActive = false;
+            pipContainer.classList.add('pip-hidden');
+            pipFrame.src = '';
+        });
+
+        // Drag PiP window
+        (function() {
+            let dragging = false, ox = 0, oy = 0;
+            pipHeader.addEventListener('mousedown', (e) => {
+                dragging = true;
+                const rect = pipContainer.getBoundingClientRect();
+                ox = e.clientX - rect.left;
+                oy = e.clientY - rect.top;
+                pipContainer.style.transition = 'none';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!dragging) return;
+                pipContainer.style.right = 'auto';
+                pipContainer.style.bottom = 'auto';
+                pipContainer.style.left = (e.clientX - ox) + 'px';
+                pipContainer.style.top  = (e.clientY - oy) + 'px';
+            });
+            document.addEventListener('mouseup', () => { dragging = false; });
+        })();
+
         const fullscreenBtn = document.getElementById('fullscreenBtn');
         const fullscreenIcon = document.getElementById('fullscreenIcon');
         const fullscreenLabel = document.getElementById('fullscreenLabel');
@@ -2323,15 +2636,39 @@
                 : '<path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 0h2v6h-6v-2h4v-4z"/>';
         }
 
-        fullscreenBtn.addEventListener('click', () => {
+        // ── Fullscreen: request native fullscreen on the iframe element ──
+        function toggleIframeFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
+                mainFrame.requestFullscreen({ navigationUI: 'hide' }).catch(() => {
+                    // Fallback: browser blocked iframe fullscreen, use CSS expand
+                    document.body.classList.toggle('frame-fullscreen');
+                });
             } else {
                 document.exitFullscreen().catch(() => {});
             }
+        }
+
+        fullscreenBtn.addEventListener('click', toggleIframeFullscreen);
+
+        document.addEventListener('fullscreenchange', () => {
+            const isFs = document.fullscreenElement === mainFrame;
+            updateFullscreenButton();
+            // When exiting fullscreen, remove CSS fallback class too
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('frame-fullscreen');
+            }
         });
 
-        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        // Auto-resize iframe to always fill its container
+        const frameShell = document.querySelector('.frame-shell');
+        const resizeObserver = new ResizeObserver(() => {
+            if (document.fullscreenElement !== mainFrame) {
+                mainFrame.style.width  = '100%';
+                mainFrame.style.height = '100%';
+            }
+        });
+        resizeObserver.observe(frameShell);
+
     </script>
 
 <script>
@@ -2340,65 +2677,39 @@
     e.returnValue = '';
   });
 
-  // F key = expand iframe to fill entire page
+  // F key = native iframe fullscreen
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'f' || e.key === 'F') {
+      const tag = document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const mainFrame = document.getElementById('mainFrame');
+      if (!document.fullscreenElement) {
+        mainFrame.requestFullscreen({ navigationUI: 'hide' }).catch(() => {
+          document.body.classList.toggle('frame-fullscreen');
+        });
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  });
+
+  // CSS fallback for browsers that block iframe fullscreen
   const _fsStyle = document.createElement('style');
   _fsStyle.textContent = `
     body.frame-fullscreen .sidebar,
     body.frame-fullscreen .main,
     body.frame-fullscreen .chat-panel,
-    body.frame-fullscreen .topbar,
+    body.frame-fullscreen .announce-banner,
+    body.frame-fullscreen .frame-toolbar,
     body.frame-fullscreen .frame-shell > *:not(#mainFrame),
     body.frame-fullscreen .overlay { display: none !important; }
-    body.frame-fullscreen .app {
-      display: block !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      max-width: 100% !important;
-    }
-    body.frame-fullscreen .frame-wrap {
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border-radius: 0 !important;
-      z-index: 99999 !important;
-    }
-    body.frame-fullscreen .frame-shell {
-      border-radius: 0 !important;
-      border: none !important;
-      height: 100vh !important;
-      min-height: 100vh !important;
-    }
-    body.frame-fullscreen #mainFrame {
-      border-radius: 0 !important;
-      opacity: 1 !important;
-      transform: none !important;
-      filter: none !important;
-      image-rendering: auto !important;
-    }
-    body.frame-fullscreen .frame-wrap,
-    body.frame-fullscreen .frame-shell,
-    body.frame-fullscreen .panel,
-    body.frame-fullscreen * {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      filter: none !important;
-      transform: none !important;
-      will-change: auto !important;
-      isolation: auto !important;
-    }
+    body.frame-fullscreen .app { display: block !important; padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+    body.frame-fullscreen .frame-wrap { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; padding: 0 !important; border-radius: 0 !important; z-index: 99999 !important; }
+    body.frame-fullscreen .frame-shell { border-radius: 0 !important; border: none !important; height: 100vh !important; min-height: 100vh !important; }
+    body.frame-fullscreen #mainFrame { border-radius: 0 !important; opacity: 1 !important; transform: none !important; width: 100% !important; height: 100% !important; }
+    body.frame-fullscreen * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; filter: none !important; will-change: auto !important; isolation: auto !important; }
   `;
   document.head.appendChild(_fsStyle);
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'f' || e.key === 'F') {
-      const tag = document.activeElement.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      document.body.classList.toggle('frame-fullscreen');
-    }
-  });
 </script>
 </body>
 </html>

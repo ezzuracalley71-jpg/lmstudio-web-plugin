@@ -50,8 +50,50 @@ const MAX_HISTORY = 50;
 const HISTORY_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 let onlineUsers = 0;
 
-// Server-side bookmark store â€” starts empty, synced from admin
-let serverBookmarks = null;
+// ── JSONBin.io persistence ───────────────────────────────────
+// Set these in Koyeb environment variables:
+//   JSONBIN_BIN_ID  — the bin ID from jsonbin.io
+//   JSONBIN_API_KEY — your Master Key from jsonbin.io
+const JSONBIN_BIN_ID  = process.env.JSONBIN_BIN_ID  || '69cdda8daaba882197b84191';
+const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY || '$2a$10$zzDhkwrUe1Z3lhrWAcZTre5H.F/VMJpUN/48PnJhwFpI6ZqMpVxD.';
+
+async function loadBookmarks() {
+  if (!JSONBIN_BIN_ID || !JSONBIN_API_KEY) {
+    console.warn('JSONBin env vars not set — bookmarks will not persist across restarts.');
+    return null;
+  }
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    const json = await res.json();
+    if (Array.isArray(json?.record)) {
+      console.log(`Loaded ${json.record.length} bookmarks from JSONBin.`);
+      return json.record;
+    }
+  } catch (e) {
+    console.error('Failed to load bookmarks from JSONBin:', e.message);
+  }
+  return null;
+}
+
+async function saveBookmarks(data) {
+  if (!JSONBIN_BIN_ID || !JSONBIN_API_KEY) return;
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY
+      },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    console.error('Failed to save bookmarks to JSONBin:', e.message);
+  }
+}
+
+let serverBookmarks = await loadBookmarks();
 
 // Add words to this list to filter them out of usernames and messages
 const BANNED_WORDS = ['badword1', 'badword2', 'inappropriate', 'spam'];
@@ -137,6 +179,7 @@ io.on('connection', (socket) => {
       url:   String(b.url   || '').slice(0, 500)
     }));
     console.log(`Admin updated bookmarks (${serverBookmarks.length} items)`);
+    await saveBookmarks(serverBookmarks);
     io.emit('bookmarks:update', serverBookmarks);
   });
 

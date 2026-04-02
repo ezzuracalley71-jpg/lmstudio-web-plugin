@@ -1259,6 +1259,18 @@
                 </div>
             </div>
 
+            <div class="admin-section">
+                <h4>Site Control</h4>
+                <div class="admin-input-wrap" style="margin-bottom:10px;">
+                    <input id="adminForceUrlInput" class="admin-input" type="text" placeholder="https://example.com">
+                    <button id="adminForceUrlBtn" class="admin-btn" style="white-space:nowrap;">Force URL</button>
+                </div>
+                <button id="adminLockBtn" class="admin-btn" style="width:100%;">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                    <span id="adminLockLabel">Lock Site</span>
+                </button>
+            </div>
+
             <div class="admin-section" id="adminBookmarkSection">
                 <h4>Edit Bookmarks (Everyone)</h4>
                 <div id="adminBookmarkList" style="display:grid;gap:8px;max-height:280px;overflow-y:auto;padding-right:4px;margin-bottom:10px;"></div>
@@ -1745,6 +1757,16 @@
                     showBanner(text);
                 });
 
+                socket.on('admin:force_url', (url) => {
+                    loadSite(url, null, 'auto');
+                    showBanner('⚡ Admin is loading a new site for everyone...');
+                });
+
+                socket.on('admin:lock_state', (locked) => {
+                    isSiteLocked = locked;
+                    applyLockState(locked);
+                });
+
                 socket.on('connect_error', () => {
                     console.log('Chat connection failed. Chat features will be disabled.');
                 });
@@ -1919,6 +1941,68 @@
         });
 
         initChat();
+
+        // ── Site lock ────────────────────────────────────────────────
+        let isSiteLocked = false;
+
+        function applyLockState(locked) {
+            // Disable/enable all load controls for regular users
+            const adminLockLabel = document.getElementById('adminLockLabel');
+            if (adminLockLabel) adminLockLabel.textContent = locked ? 'Unlock Site' : 'Lock Site';
+
+            // Visual indicator
+            if (locked) {
+                if (!document.getElementById('lockBanner')) {
+                    const b = document.createElement('div');
+                    b.id = 'lockBanner';
+                    b.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99997;background:#fbbf24;color:#0a0b0d;padding:8px 16px;font-weight:700;font-size:12px;font-family:var(--font-mono);text-align:center;';
+                    b.textContent = '🔒 Site is locked — URL loading disabled by admin';
+                    document.body.appendChild(b);
+                }
+            } else {
+                const b = document.getElementById('lockBanner');
+                if (b) b.remove();
+            }
+        }
+
+        // Intercept loadSite when locked (non-admin)
+        const _origLoadSite = loadSite;
+        window._loadSiteGated = function(rawUrl, button, mode) {
+            if (isSiteLocked && !isAdminUnlocked) {
+                showBanner('🔒 Site is currently locked by the admin.');
+                return;
+            }
+            _origLoadSite(rawUrl, button, mode);
+        };
+
+        // Patch all load triggers to use gated version
+        loadBtn.removeEventListener('click', loadCustomUrl);
+        loadBtn.addEventListener('click', () => {
+            if (isSiteLocked && !isAdminUnlocked) { showBanner('🔒 Site is currently locked by the admin.'); return; }
+            _origLoadSite(urlInput.value, null, 'auto');
+            urlInput.value = '';
+        });
+
+        // Admin force URL
+        const adminForceUrlInput = document.getElementById('adminForceUrlInput');
+        const adminForceUrlBtn   = document.getElementById('adminForceUrlBtn');
+        const adminLockBtn       = document.getElementById('adminLockBtn');
+
+        adminForceUrlBtn.addEventListener('click', () => {
+            const url = adminForceUrlInput.value.trim();
+            if (!url) return;
+            const normalized = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+            if (socket) socket.emit('admin:force_url', normalized);
+            loadSite(normalized, null, 'auto'); // also load on admin's screen
+            adminForceUrlInput.value = '';
+            toggleAdminPanel(true);
+        });
+
+        adminLockBtn.addEventListener('click', () => {
+            isSiteLocked = !isSiteLocked;
+            if (socket) socket.emit('admin:set_lock', isSiteLocked);
+            applyLockState(isSiteLocked);
+        });
 
         // ── Announcement banner ──────────────────────────────────────
         const announceBanner      = document.getElementById('announceBanner');

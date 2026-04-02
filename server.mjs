@@ -171,7 +171,7 @@ io.on('connection', (socket) => {
     if (serverBookmarks) socket.emit('bookmarks:update', serverBookmarks);
   });
 
-  socket.on('admin:set_bookmarks', (data) => {
+  socket.on('admin:set_bookmarks', async (data) => {
     if (!Array.isArray(data)) return;
     // Sanitise
     serverBookmarks = data.map(b => ({

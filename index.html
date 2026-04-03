@@ -1362,8 +1362,13 @@
             if (event.key === adminSequence[adminProgress]) {
                 adminProgress++;
                 if (adminProgress === adminSequence.length) {
-                    toggleAdminPanel();
                     adminProgress = 0;
+                    const pwd = prompt('Enter admin password:');
+                    if (pwd === '1194') {
+                        toggleAdminPanel();
+                    } else if (pwd !== null) {
+                        alert('Incorrect password.');
+                    }
                 }
             } else {
                 adminProgress = event.key === adminSequence[0] ? 1 : 0;
